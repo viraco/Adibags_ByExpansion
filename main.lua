@@ -7,9 +7,7 @@ AddonTable.ItemTables = {}
 AddonTable.Modules = {}
 
 function Core:Debug(obj, desc)
-    if ViragDevTool_AddData then
-        ViragDevTool_AddData(obj, desc)
-    end
+    if ViragDevTool_AddData then ViragDevTool_AddData(obj, desc) end
 end
 
 function Core:GetOptions()
@@ -18,92 +16,87 @@ function Core:GetOptions()
             name = "Achievement",
             desc = 'Achievement items.',
             type = 'toggle',
-            order = 74,
+            order = 74
         },
         Consumable = {
             name = "Consumables",
             desc = 'Consumable items.',
             type = 'toggle',
-            order = 74,
+            order = 74
         },
         TradeMaterials = {
             name = "Trade Materials",
             desc = 'Crafting Materials.',
             type = 'toggle',
-            order = 70,
+            order = 70
         },
         BattlePets = {
             name = "Battle Pets",
             desc = 'Battle Pets',
             type = 'toggle',
-            order = 70,
+            order = 70
         },
-        Toys = {
-            name = "Toys",
-            desc = 'Toys',
-            type = 'toggle',
-            order = 70,
-        },
+        Toys = {name = "Toys", desc = 'Toys', type = 'toggle', order = 70},
         Loot = {
             name = "Loot",
             desc = 'Non junk items',
             type = 'toggle',
-            order = 70,
+            order = 70
         },
         DungeonEquipment = {
             name = "Dungeon Equipment",
             desc = 'Weapons/Armour from Dungeons',
             type = 'toggle',
-            order = 71,
+            order = 71
         },
         RaidEquipment = {
             name = "Raid Equipment",
             desc = 'Weapons/Armour from Raids',
             type = 'toggle',
-            order = 79,
+            order = 79
         },
         Reputation = {
             name = "Reputation",
             desc = 'Reputation items.',
             type = 'toggle',
-            order = 74,
+            order = 74
         },
         Transmog = {
             name = "Transmog",
             desc = 'BoE Weapons/Armour',
             type = 'toggle',
-            order = 79,
+            order = 79
         },
         Junk = {
             name = "Junk",
             desc = 'Grey quality items.',
             type = 'toggle',
-            order = 73,
+            order = 73
         },
         Quest = {
             name = "Quest",
             desc = 'Quest items',
             type = 'toggle',
-            order = 73,
+            order = 73
         },
         FoodIsJunk = {
             name = "Food is Junk",
             desc = 'Classify food as Junk.',
             type = 'toggle',
-            order = 80,
+            order = 80
         },
         EverythingIsJunk = {
             name = "Everything is Junk",
             desc = 'Classify everything as Junk.',
             type = 'toggle',
-            order = 81,
+            order = 81
         },
         ShowExpansionNumbers = {
             name = "Add Number Prefix",
             desc = 'Show the number (eg "01.").',
             type = 'toggle',
-            order = 81,
-        },
+            order = 81
+        }
         -- ShowExpansionIcons = {
         --     name = "Show Expansion Icon",
         --     desc = 'Show the expansion icon.',
@@ -154,9 +147,7 @@ function Core:DefaultFilter(slotData, module, expFilter)
         showExpansionIconPrefix = expFilter.db.profile.ShowExpansionIcons
     end
 
-    if showExpansionNumberPrefix then
-        prefix = prefix .. module.prefix.num
-    end
+    if showExpansionNumberPrefix then prefix = prefix .. module.prefix.num end
 
     if showExpansionIconPrefix then
         prefix = prefix .. 'icon'
@@ -168,43 +159,58 @@ function Core:DefaultFilter(slotData, module, expFilter)
 
     for tableName, tableDescription in pairs(module.categories) do
         if expFilter.db.profile[tableName] then
-            --option for the table is enabled
+            -- option for the table is enabled
             if expTable then
                 if expTable[tableName] then
                     if tableName == "RaidEquipment" then
-                        for abbr,raid in pairs(module.raids) do
+                        for abbr, raid in pairs(module.raids) do
                             if expTable[tableName][abbr] then
                                 if expTable[tableName][abbr][slotData.itemId] then
                                     if everythingIsJunk then
                                         return prefix .. "Junk"
+                                    elseif load(
+                                        "expFilter.db.profile." .. tableName) then
+                                        return
+                                            prefix .. "Equipment (" .. raid ..
+                                                ")"
                                     else
-                                        return prefix .. "Equipment (" .. raid .. ")"
+                                        return tableDescription
                                     end
                                 end
                             end
                         end
                     elseif tableName == "Professions" then
-                        for _,prof in pairs(Core:GetProfessions()) do
+                        for _, prof in pairs(Core:GetProfessions()) do
                             if expTable[tableName][prof] then
                                 if expTable[tableName][prof][slotData.itemId] then
                                     if everythingIsJunk then
                                         return prefix .. "Junk"
-                                    else
-                                        local profDisplayName = prof:sub(1,1):upper()..prof:sub(2)
+                                    elseif load(
+                                        "expFilter.db.profile." .. tableName) then
+                                        local profDisplayName =
+                                            prof:sub(1, 1):upper() ..
+                                                prof:sub(2)
                                         return prefix .. " " .. profDisplayName
+                                    else
+                                        return tableDescription
                                     end
                                 end
                             end
                         end
                     elseif tableName == "DungeonEquipment" then
                         if (module.dungeons ~= nil) then
-                            for abbr,dungeon in pairs(module.dungeons) do
+                            for abbr, dungeon in pairs(module.dungeons) do
                                 if expTable[tableName][abbr] then
                                     if expTable[tableName][abbr][slotData.itemId] then
                                         if everythingIsJunk then
                                             return prefix .. "Junk"
+                                        elseif load(
+                                            "expFilter.db.profile." .. tableName) then
+                                            return
+                                                prefix .. "Equipment (" ..
+                                                    dungeon .. ")"
                                         else
-                                            return prefix .. "Equipment (" .. dungeon .. ")"
+                                            return tableDescription
                                         end
                                     end
                                 end
@@ -212,22 +218,22 @@ function Core:DefaultFilter(slotData, module, expFilter)
                         end
                     elseif tableName == "Consumable" then
                         if expTable[tableName][slotData.itemId] then
-                            if everythingIsJunk then
+                            if everythingIsJunk or foodIsJunk then
                                 return prefix .. "Junk"
+                            elseif load("expFilter.db.profile." .. tableName) then
+                                return prefix .. tableDescription
                             else
-                                if foodIsJunk then
-                                    return prefix .. "Junk"
-                                else
-                                    return prefix .. tableDescription
-                                end
+                                return tableDescription
                             end
                         end
                     else
                         if expTable[tableName][slotData.itemId] then
                             if everythingIsJunk then
                                 return prefix .. "Junk"
-                            else
+                            elseif load("expFilter.db.profile." .. tableName) then
                                 return prefix .. tableDescription
+                            else
+                                return tableDescription
                             end
                         end
                     end
@@ -239,8 +245,10 @@ function Core:DefaultFilter(slotData, module, expFilter)
                     if expTable[tableName][slotData.itemId] then
                         if everythingIsJunk then
                             return prefix .. "Junk"
-                        else
+                        elseif load("expFilter.db.profile." .. tableName) then
                             return prefix .. tableDescription
+                        else
+                            return tableDescription
                         end
                     end
                 end
@@ -262,30 +270,18 @@ function Core:GetClasses()
         [9] = "Warlock",
         [10] = "Monk",
         [11] = "Druid",
-        [12] = "Demon Hunter",
+        [12] = "Demon Hunter"
     }
 end
 
 function Core:GetProfessions()
     return {
         -- Crafting
-        "alchemy",
-        "blacksmithing",
-        "enchanting",
-        "engineering",
-        "inscription",
-        "jewelcrafting",
-        "leatherworking",
-        "tailoring",
-        -- Gathering
+        "alchemy", "blacksmithing", "enchanting", "engineering", "inscription",
+        "jewelcrafting", "leatherworking", "tailoring", -- Gathering
         "cloth", -- Not a gathering profession, but works as such
-        "mining",
-        "skinning",
-        "herbalism",
-        -- Secondary
-        "archaeology",
-        "cooking",
-        "fishing",
+        "mining", "skinning", "herbalism", -- Secondary
+        "archaeology", "cooking", "fishing"
     }
 end
 
@@ -304,7 +300,7 @@ function Core:GetDefaultCategories()
         ["Loot"] = "Other", -- Green or higher (soulbound), BoE non-appearences.
         ["FoodDrink"] = "Food / Drink", -- Food and Drinks
         ["Transmog"] = "Transmog Appearence", -- Non-bound appearence slot items.
-        ["Quest"] = "Quest Item",
+        ["Quest"] = "Quest Item"
     }
 end
 
@@ -313,20 +309,18 @@ function Core:AddExpansion(module)
     AddonTable.ItemTables[expansion] = {}
     local categories = module.categories
 
-    for key,desc in pairs(categories) do
+    for key, desc in pairs(categories) do
         AddonTable.ItemTables[expansion][key] = {}
     end
 
-    for key,desc in pairs(module.raids) do
+    for key, desc in pairs(module.raids) do
         AddonTable.ItemTables[expansion][key] = {}
     end
 end
 
 function Core:AddCategoryItems(items, category, module)
-    if not items then
-        return
-    end
-    for i,itemId in pairs(items) do
+    if not items then return end
+    for i, itemId in pairs(items) do
         AddonTable.ItemTables[module.name][category][itemId] = true
     end
 end
@@ -337,24 +331,19 @@ end
 -- @param module
 --
 function Core:AddDungeonItems(items, dungeon, module)
-    if not items then
-        return
-    end
+    if not items then return end
     -- Create the table if it doesn't already exist
     if not AddonTable.ItemTables[module.name]["DungeonEquipment"] then
         AddonTable.ItemTables[module.name]["DungeonEquipment"] = {}
     end
-    local dungeonEquipment = AddonTable.ItemTables[module.name]["DungeonEquipment"]
+    local dungeonEquipment =
+        AddonTable.ItemTables[module.name]["DungeonEquipment"]
 
     -- Add the dungeon if it does not already exist.
-    if not dungeonEquipment[dungeon] then
-        dungeonEquipment[dungeon] = {}
-    end
+    if not dungeonEquipment[dungeon] then dungeonEquipment[dungeon] = {} end
 
     -- Add the items for the dungeon
-    for i,itemId in pairs(items) do
-        dungeonEquipment[dungeon][itemId] = true
-    end
+    for i, itemId in pairs(items) do dungeonEquipment[dungeon][itemId] = true end
 end
 
 --- Add items to a given raid.
@@ -363,37 +352,27 @@ end
 -- @param module
 --
 function Core:AddRaidItems(items, raid, module)
-    if not items then
-        return
-    end
+    if not items then return end
     if not AddonTable.ItemTables[module.name]["RaidEquipment"] then
         AddonTable.ItemTables[module.name]["RaidEquipment"] = {}
     end
     local raidEquipment = AddonTable.ItemTables[module.name]["RaidEquipment"]
 
-    if not raidEquipment[raid] then
-        raidEquipment[raid] = {}
-    end
+    if not raidEquipment[raid] then raidEquipment[raid] = {} end
 
-    for i,itemId in pairs(items) do
-        raidEquipment[raid][itemId] = true
-    end
+    for i, itemId in pairs(items) do raidEquipment[raid][itemId] = true end
 end
 
 function Core:AddProfessionItems(items, profession, module)
-    if not items then
-        return
-    end
+    if not items then return end
     if not AddonTable.ItemTables[module.name]["Professions"] then
         AddonTable.ItemTables[module.name]["Professions"] = {}
     end
     local professionTable = AddonTable.ItemTables[module.name]["Professions"]
 
-    if not professionTable[profession] then
-        professionTable[profession] = {}
-    end
+    if not professionTable[profession] then professionTable[profession] = {} end
 
-    for i,itemId in pairs(items) do
+    for i, itemId in pairs(items) do
         professionTable[profession][itemId] = true
     end
 end
@@ -433,7 +412,7 @@ function Core:LoadCategories(table, module)
 
     -- Professions
     local professions = Core:GetProfessions()
-    for _,prof in pairs(professions) do
+    for _, prof in pairs(professions) do
         if table[prof] then
             -- Core:AddCategoryItems(table[prof], "Profession", module)
             Core:AddProfessionItems(table[prof], prof, module)
@@ -442,7 +421,7 @@ function Core:LoadCategories(table, module)
 
     -- Dungeons
     if module.dungeons ~= nil then
-        for dungeon,desc in pairs(module.dungeons) do
+        for dungeon, desc in pairs(module.dungeons) do
             if table[dungeon] then
                 Core:AddDungeonItems(table[dungeon], dungeon, module)
             end
@@ -451,7 +430,7 @@ function Core:LoadCategories(table, module)
 
     -- Raids
     if module.raids ~= nil then
-        for raid,desc in pairs(module.raids) do
+        for raid, desc in pairs(module.raids) do
             if table[raid] then
                 Core:AddRaidItems(table[raid], raid, module)
             end
@@ -494,7 +473,7 @@ function Core:LoadExpansion(module)
     expFilter.uiName = module.namespace
     expFilter.uiDesc = module.description
 
-    if module.filter ~=nil then
+    if module.filter ~= nil then
         function expFilter:Filter(slotData)
             return module.filter(slotData)
         end
@@ -505,9 +484,8 @@ function Core:LoadExpansion(module)
     end
 
     function expFilter:OnInitialize()
-        self.db = AdiBags.db:RegisterNamespace(module.namespace, {
-            profile = Core:GetProfile()
-        })
+        self.db = AdiBags.db:RegisterNamespace(module.namespace,
+                                               {profile = Core:GetProfile()})
     end
 
     function expFilter:GetOptions()
